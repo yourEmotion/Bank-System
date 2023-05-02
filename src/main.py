@@ -2,11 +2,7 @@ import sys
 
 from PyQt5.QtWidgets import QApplication
 
-from windows import MainMenu
-
-from Database.users import UsersDB
-from Database.records import RecordsDB
-
+from src.Windows.windows import MainMenu
 
 def launch_app():
     app = QApplication(sys.argv)
