@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QMainWindow, QMessageBox
 
 from collections import defaultdict
+from string import ascii_letters, digits
 
 from src.Windows.TextStyles import day_mode_styles as day
 from src.Windows.TextStyles import night_mode_styles as night
@@ -186,7 +187,19 @@ class RegisterWindow(QWidget):
             _day = date[0:2]
             return f"{year}-{month}-{_day}"
 
-        if users_db.in_database(self.curr_user_name):
+        def valid_user_name(name: str) -> bool:
+            valid_symbols = set(ascii_letters + digits + "_")
+            for symbol in name:
+                if symbol not in valid_symbols:
+                    return False
+            return True
+
+        if not valid_user_name(self.curr_user_name) or len(self.curr_user_name) < 3:
+            wf.goto(window=self,
+                    new_window=RegisterFailWindow(wrong_field="invalid symbols"),
+                    close=False)
+
+        elif users_db.in_database(self.curr_user_name):
             wf.goto(window=self,
                     new_window=RegisterFailWindow(wrong_field="user name"),
                     close=False)
@@ -604,5 +617,8 @@ class OperationSuccessWindow(QMessageBox):
 class OperationFailWindow(QMessageBox):
     def __init__(self, wrong_field):
         super().__init__()
+        self.setFixedWidth(wf.WIDTH)
+        self.setFixedHeight(wf.HEIGHT)
+        wf.move_to_center(self)
 
         wf.set_labels(self, wrong_field)

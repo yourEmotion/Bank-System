@@ -14,6 +14,7 @@ class UsersDB:
                         balance NUMERIC DEFAULT 0,
                         join_dttm TIMESTAMP DEFAULT current_timestamp);
                         ''')
+        self.connection.commit()
 
     def insert(self, *args) -> None:  # args = (user_name, password, birthday)
         self.cursor.execute('''INSERT INTO users(user_nm, password, birthday)

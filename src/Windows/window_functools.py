@@ -1,10 +1,12 @@
-from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QMainWindow, QLineEdit, QMessageBox
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication, QScrollArea, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox
 from PyQt5.QtCore import QSize
 
 from src.Windows import windows
 
 from collections import defaultdict
+
+from src.Database.records import records_db
 
 
 WIDTH = 1000
@@ -263,6 +265,18 @@ def set_buttons(window) -> None:
         window.buttons["Back"].setIcon(QIcon("images/back.png"))
         window.buttons["Back"].setIconSize(QSize(75, 40))
 
+        window.buttons["Night mode"] = QPushButton(window)
+        window.buttons["Night mode"].setGeometry(0, 0, 110, 80)
+        window.buttons["Night mode"].move(WIDTH - 140, 10)
+        window.buttons["Night mode"].setText("Night\nmode")
+        window.buttons["Night mode"].clicked.connect(window.switch_night_mode)
+
+        window.fonts = defaultdict()
+        for button in window.buttons.keys():
+            window.fonts[button] = window.buttons[button].font()
+            window.fonts[button].setPointSize(20)
+            window.buttons[button].setFont(window.fonts[button])
+
     elif isinstance(window, windows.OperationSuccessWindow):
         
         window.addButton(QMessageBox.Ok)
@@ -326,7 +340,7 @@ def set_labels(window, wrong_field=None) -> None:
 
         window.fonts = defaultdict()
 
-        window.labels["Title"] = QLabel('Credits', window)
+        window.labels["Title"] = QLabel('Description', window)
         window.labels["Title"].setStyleSheet("color: black; font-weight: bold")
         window.labels["Title"].move(WIDTH // 2 - 75, 30)
         window.labels["Title"].setFixedSize(WIDTH - 840, 100)
@@ -360,6 +374,8 @@ def set_labels(window, wrong_field=None) -> None:
         window.setWindowTitle("USER CREATION ERROR")
         if wrong_field == "user name":
             window.setText("This user already exists.")
+        elif wrong_field == "invalid symbols":
+            window.setText("Invalid user name.")
         elif wrong_field == "birthday":
             window.setText("Invalid date format entered.")
         elif wrong_field == "password":
@@ -520,7 +536,56 @@ def set_labels(window, wrong_field=None) -> None:
         window.setIcon(QMessageBox.Warning)
 
     elif isinstance(window, windows.HistoryWindow):
-        pass
+
+        window.fonts = defaultdict()
+
+        def parsed_date(date: str) -> str:
+            year = date[0:4]
+            month = date[5:7]
+            day = date[8:10]
+            hour = date[11:13]
+            minute = date[14:16]
+            return f"{day}.{month}.{year} {hour}:{minute}"
+
+        operations = records_db.get_records(windows.curr_user_name)
+
+        for i in range(len(operations)):
+            date = parsed_date(str(operations[i][0]))
+            operation = operations[i][1]
+            value = operations[i][2]
+            recipient = operations[i][3]
+
+            operation_text = ""
+            if operation == "send":
+                operation_text = f"sent {value} ₽ to \"{recipient}\""
+            elif operation == "withdraw":
+                operation_text = f"withdrawn {value} ₽"
+            elif operation == "deposit":
+                operation_text = f"deposited {value} ₽"
+
+            window.labels[f"Date {i}"] = QLabel(f"{date}:", window)
+            window.labels[f"Date {i}"].setStyleSheet("color: black; font: italic;")
+            window.labels[f"Date {i}"].move(60, 110 + 23 * i)
+            window.labels[f"Date {i}"].setFixedSize(160, 23)
+
+            window.labels[f"Operation {i}"] = QLabel(operation_text, window)
+            window.labels[f"Operation {i}"].setStyleSheet("color: black")
+            window.labels[f"Operation {i}"].move(230, 110 + 23 * i)
+            window.labels[f"Operation {i}"].setFixedSize((WIDTH - 200) // 2, 23)
+
+        window.fonts = defaultdict()
+        for label in window.labels.keys():
+            window.fonts[label] = window.labels[label].font()
+            window.fonts[label].setPointSize(14)
+            window.labels[label].setFont(window.fonts[label])
+
+        window.labels["Title"] = QLabel("History", window)
+        window.labels["Title"].setStyleSheet("color: black; font-weight: bold;")
+        window.labels["Title"].move(WIDTH // 2 - 75, 30)
+        window.labels["Title"].setFixedSize(WIDTH - 840, 60)
+        window.fonts["Title"] = window.labels["Title"].font()
+        window.fonts["Title"].setPointSize(32)
+        window.labels["Title"].setFont(window.fonts["Title"])
 
 
 def set_line_edits(window) -> None:
