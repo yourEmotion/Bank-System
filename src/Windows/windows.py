@@ -386,7 +386,7 @@ class SendWindow(QWidget):
 
         try:
             money_sent = int(self.line_edits["Money"].text())
-            if money_sent < 0:
+            if money_sent < 0 or money_sent > 999_999_999_999:
                 raise Exception
 
         except:
@@ -397,7 +397,12 @@ class SendWindow(QWidget):
 
         recipient = self.line_edits["Recipient"].text()
 
-        if not users_db.in_database(recipient):
+        if recipient == curr_user_name:
+            wf.goto(window=self,
+                    new_window=OperationFailWindow(wrong_field="send to yourself"),
+                    close=False)
+
+        elif not users_db.in_database(recipient):
             wf.goto(window=self,
                     new_window=OperationFailWindow(wrong_field="recipient"),
                     close=False)
@@ -409,8 +414,8 @@ class SendWindow(QWidget):
 
         else:
             records_db.insert(curr_user_name, "send", money_sent, recipient)
-            users_db.update_balance(curr_user_name, old_balance - money_sent)
-            users_db.update_balance(recipient, old_balance + money_sent)
+            users_db.update_balance(curr_user_name, -money_sent)
+            users_db.update_balance(recipient, money_sent)
 
             wf.goto(window=self,
                     new_window=OperationSuccessWindow(self),
@@ -458,7 +463,7 @@ class WithdrawWindow(QWidget):
 
         try:
             money_withdrawn = int(self.line_edits["Money"].text())
-            if money_withdrawn < 0:
+            if money_withdrawn < 0 or money_withdrawn > 999_999_999_999:
                 raise Exception
 
         except:
@@ -522,7 +527,7 @@ class DepositWindow(QWidget):
 
         try:
             money_deposited = int(self.line_edits["Money"].text())
-            if money_deposited < 0:
+            if money_deposited < 0 or money_deposited > 999_999_999_999:
                 print(money_deposited)
                 raise Exception
 
@@ -619,6 +624,5 @@ class OperationFailWindow(QMessageBox):
         super().__init__()
         self.setFixedWidth(wf.WIDTH)
         self.setFixedHeight(wf.HEIGHT)
-        wf.move_to_center(self)
 
         wf.set_labels(self, wrong_field)

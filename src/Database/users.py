@@ -21,9 +21,9 @@ class UsersDB:
                                 VALUES (?, ?, ?);''', args)
         self.connection.commit()
 
-    def update_balance(self, *args) -> None:  # args = (user_name, new_balance)
+    def update_balance(self, *args) -> None:  # args = (user_name, delta_balance)
         self.cursor.execute('''UPDATE users
-                               SET balance = (?)
+                               SET balance = balance + (?)
                                WHERE user_nm = (?);''', (args[1], args[0]))
         self.connection.commit()
 

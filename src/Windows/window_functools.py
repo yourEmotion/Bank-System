@@ -342,8 +342,8 @@ def set_labels(window, wrong_field=None) -> None:
 
         window.labels["Title"] = QLabel('Description', window)
         window.labels["Title"].setStyleSheet("color: black; font-weight: bold")
-        window.labels["Title"].move(WIDTH // 2 - 75, 30)
-        window.labels["Title"].setFixedSize(WIDTH - 840, 100)
+        window.labels["Title"].move(WIDTH // 2 - 110, 30)
+        window.labels["Title"].setFixedSize(WIDTH - 770, 100)
         window.fonts["Title"] = window.labels["Title"].font()
         window.fonts["Title"].setPointSize(32)
         window.labels["Title"].setFont(window.fonts["Title"])
@@ -526,7 +526,9 @@ def set_labels(window, wrong_field=None) -> None:
     elif isinstance(window, windows.OperationFailWindow):
 
         window.setWindowTitle("OPERATION ERROR")
-        if wrong_field == "recipient":
+        if wrong_field == "send to yourself":
+            window.setText("You can't send money to yourself.")
+        elif wrong_field == "recipient":
             window.setText("This recipient does not exist.")
         elif wrong_field == "money":
             window.setText("You have not enough money for operation.")
